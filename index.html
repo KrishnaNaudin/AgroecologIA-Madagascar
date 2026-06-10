@@ -152,7 +152,7 @@ function buildPayload(){
    var adds=[];for(var i=1;i<=5;i++){if(store['add'+i+'_'+qid+'_txt'])adds.push({texte:store['add'+i+'_'+qid+'_txt'],niveau:store['add'+i+'_'+qid]||''})}
    var qA={},qB={};CRIT.forEach(function(c){qA[c[0]]=store['qualA_'+qid+'_'+c[0]]||'';qB[c[0]]=store['qualB_'+qid+'_'+c[0]]||''});
    return {qid:qid,connaissance:store['know_'+qid]||"",nuggets:nug,ajouts_libres:adds,
-           qualite_A:qA,systeme_A:Q.A,qualite_B:qB,systeme_B:Q.B};});
+           qualite_A:qA,systeme_A:Q.A,id_A:(C[qid].respId||{})[Q.A]||"",qualite_B:qB,systeme_B:Q.B,id_B:(C[qid].respId||{})[Q.B]||""};});
  return {atelier:CFG.ATELIER,evaluateur:EV,horodatage:new Date().toISOString(),profil:prof,questions:qs};
 }
 window.sendData=function(){
