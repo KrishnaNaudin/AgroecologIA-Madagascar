@@ -22,7 +22,7 @@ h3{font-size:15px;margin:1em 0 .3em}.sub{font-weight:700;color:var(--dgreen);mar
 table.nug{width:100%;border-collapse:collapse;margin-top:6px;font-size:13px}.nug th,.nug td{border:1px solid var(--border);padding:5px;text-align:center}
 .nug td.tx{text-align:left}.nug td.idc{font-weight:700;color:var(--dgreen)}.nug th{background:#eef2f0;font-size:12px}
 .chip{display:inline-block;width:26px;height:26px;border-radius:50%;border:2px solid #bcc7c3;cursor:pointer;vertical-align:middle}
-.chip.on{background:var(--green);border-color:var(--dgreen)}.chip[data-v="R"].on{background:#c23b3b;border-color:#8f2a2a}
+.chip.on{background:var(--green);border-color:var(--dgreen)}.chip[data-v="R"].on{background:#c23b3b;border-color:#8f2a2a}.chip[data-v="P"].on{background:#e0a800;border-color:#a87b00;color:#3a2b00}.nug td textarea,.nm textarea{width:100%;min-height:56px;border:1px solid var(--border);border-radius:6px;font:inherit;font-size:13px;padding:6px;resize:vertical;box-sizing:border-box}
 .chip.wide{width:auto;height:auto;border-radius:8px;padding:7px 10px;font-size:13px;font-weight:700;color:var(--txt)}.chip.wide.on{color:#fff}
 .resp{border:1px solid var(--border);border-radius:10px;margin:10px 0;overflow:hidden}
 .resp .lab{display:flex;justify-content:space-between;align-items:center;font-weight:700;color:#fff;background:var(--green);padding:8px 14px}.resp.B .lab{background:var(--dgreen)}
@@ -62,6 +62,7 @@ var CRIT=[["Pertinence","La réponse traite-t-elle bien du sujet ?"],
  ["Confiance","Feriez-vous confiance pour conseiller un agriculteur ?"],
  ["Longueur","La longueur est-elle adaptée ?  (1 = trop courte · 3 = adaptée · 5 = trop longue)"]];
 var COLS=[["V","Vital"],["U","Utile"],["O","Option."],["R","À retirer"]];
+var NUGCOLS=[["V","Vital"],["U","Utile"],["O","Option."],["R","À retirer"],["P","Pas clair"]];
 var SCALE=[1,1.5,2,2.5,3,3.5,4,4.5,5];
 var MAXADD=10;
 document.getElementById('htitle').textContent="Fiche d'évaluation · "+(CFG.TITRE||"AgroecologIA");
@@ -77,6 +78,7 @@ window.opt=function(el){store[el.dataset.g]=el.dataset.v;el.parentNode.querySele
 window.pick=function(el){var g=el.dataset.g,v=el.dataset.v;store[g]=v;document.querySelectorAll('[data-g="'+g+'"]').forEach(function(c){c.classList.toggle('on',c.dataset.v===v)});save()};
 function esc(s){return String(s).replace(/"/g,'&quot;')}
 function txt(k,ph){var v=store[k]?(' value="'+esc(store[k])+'"'):'';return '<input type="text" data-k="'+k+'" oninput="ta(this)" placeholder="'+(ph||'')+'"'+v+'>'}
+function tarea(k,ph){var v=store[k]?esc(store[k]):'';return '<textarea data-k="'+k+'" oninput="ta(this)" placeholder="'+(ph||'')+'">'+v+'</textarea>'}
 function optset(group,vals,extra){return '<span class="opts '+(extra||'')+'">'+vals.map(function(v){return '<span class="opt'+(store[group]===v?' on':'')+'" data-g="'+group+'" data-v="'+v+'" onclick="opt(this)">'+v+'</span>'}).join('')+'</span>'}
 function scale(group,low,high){return '<div class="scalewrap"><span class="anchor">'+(low||'très mauvais')+'</span><div class="scale">'
   +SCALE.map(function(v){var lab=Number.isInteger(v)?v:String(v).replace('.',',');return '<span class="opt'+(store[group]==v?' on':'')+'" data-g="'+group+'" data-v="'+v+'" onclick="opt(this)">'+lab+'</span>'}).join('')
@@ -127,15 +129,15 @@ function ensureMap(qid){ if(!store['map_'+qid]){ var r=Math.random()<0.5; store[
 function question(qid){
  var ct=C[qid], map=ensureMap(qid);
  var rows=ct.nuggets.map(function(n){return '<tr><td class="idc">'+n.id+'</td><td class="tx">'+n.t+'</td>'
-   +COLS.map(function(c){var g='nug_'+qid+'_'+n.id;return '<td><span class="chip'+(store[g]===c[0]?' on':'')+'" data-g="'+g+'" data-v="'+c[0]+'" onclick="pick(this)"></span></td>'}).join('')+'</tr>'}).join('');
+   +NUGCOLS.map(function(c){var g='nug_'+qid+'_'+n.id;return '<td><span class="chip'+(store[g]===c[0]?' on':'')+'" data-g="'+g+'" data-v="'+c[0]+'" onclick="pick(this)"></span></td>'}).join('')+'</tr>'}).join('');
  var mob=ct.nuggets.map(function(n){return '<div class="nm"><div class="tx"><b>'+n.id+'</b> — '+n.t+'</div><div class="row">'
-   +COLS.map(function(c){var g='nug_'+qid+'_'+n.id;return '<span class="chip wide'+(store[g]===c[0]?' on':'')+'" data-g="'+g+'" data-v="'+c[0]+'" onclick="pick(this)">'+c[1]+'</span>'}).join('')+'</div></div>'}).join('');
+   +NUGCOLS.map(function(c){var g='nug_'+qid+'_'+n.id;return '<span class="chip wide'+(store[g]===c[0]?' on':'')+'" data-g="'+g+'" data-v="'+c[0]+'" onclick="pick(this)">'+c[1]+'</span>'}).join('')+'</div></div>'}).join('');
  var nAdd=store['addn_'+qid]||1; if(nAdd>MAXADD)nAdd=MAXADD;
  var adds='<table class="nug"><thead><tr><th>#</th><th class="tx">Information (ajout libre)</th><th>Vital</th><th>Utile</th><th>Option.</th><th>À retirer</th></tr></thead><tbody>';
- for(var i=1;i<=nAdd;i++){adds+='<tr><td class="idc">'+i+'</td><td class="tx">'+txt('add'+i+'_'+qid+'_txt','information importante absente des nuggets...')+'</td>'
+ for(var i=1;i<=nAdd;i++){adds+='<tr><td class="idc">'+i+'</td><td class="tx">'+tarea('add'+i+'_'+qid+'_txt','information importante absente des nuggets...')+'</td>'
    +COLS.map(function(c){var g='add'+i+'_'+qid;return '<td><span class="chip'+(store[g]===c[0]?' on':'')+'" data-g="'+g+'" data-v="'+c[0]+'" onclick="pick(this)"></span></td>'}).join('')+'</tr>';}
  adds+='</tbody></table><div class="nug-mobile">';
- for(var j=1;j<=nAdd;j++){adds+='<div class="nm"><div class="tx"><b>'+j+'.</b> '+txt('add'+j+'_'+qid+'_txt','information importante absente...')+'</div><div class="row">'
+ for(var j=1;j<=nAdd;j++){adds+='<div class="nm"><div class="tx"><b>'+j+'.</b> '+tarea('add'+j+'_'+qid+'_txt','information importante absente...')+'</div><div class="row">'
    +COLS.map(function(c){var g='add'+j+'_'+qid;return '<span class="chip wide'+(store[g]===c[0]?' on':'')+'" data-g="'+g+'" data-v="'+c[0]+'" onclick="pick(this)">'+c[1]+'</span>'}).join('')+'</div></div>';}
  adds+='</div>';
  if(nAdd<MAXADD)adds+='<button class="addbtn" onclick="addMore(\''+qid+'\')">+ Ajouter un élément ('+nAdd+'/'+MAXADD+')</button>';
@@ -146,7 +148,7 @@ function question(qid){
  app.innerHTML='<div class="card"><div class="prog">'+qid+'</div><h2>Question</h2><div class="qbox">'+ct.enonce+'</div>'
  +'<div class="sub">Votre connaissance de CE sujet <span class="muted">(une seule case)</span></div>'+optset('know_'+qid,["Pas mon domaine","Quelques notions","Bonne maîtrise","Expert / référent"],"know")+'</div>'
  +'<div class="card"><span class="step">Étape 1 — Grille des nuggets</span><p class="muted">Cochez <b>une seule case par ligne</b> : Vital · Utile · Optionnel · À retirer (redondant / hors-sujet / faux).</p>'
- +'<table class="nug"><thead><tr><th>ID</th><th class="tx">Information (nugget)</th><th>Vital</th><th>Utile</th><th>Option.</th><th>À retirer</th></tr></thead><tbody>'+rows+'</tbody></table><div class="nug-mobile">'+mob+'</div>'
+ +'<table class="nug"><thead><tr><th>ID</th><th class="tx">Information (nugget)</th><th>Vital</th><th>Utile</th><th>Option.</th><th>À retirer</th><th>Pas clair</th></tr></thead><tbody>'+rows+'</tbody></table><div class="nug-mobile">'+mob+'</div>'
  +'<div class="sub">■ Ajouts libres — informations importantes absentes des nuggets</div><p class="muted">Ajoutez les éléments manquants (jusqu\'à '+MAXADD+'), et cochez une case par ajout : Vital · Utile · Optionnel · À retirer.</p>'+adds+'</div>'
  +'<div class="card"><span class="step">Étape 2 — Lecture et notation des deux réponses (A et B, ordre tiré au sort)</span>'
  +'<div class="resp A"><div class="lab"><span>RÉPONSE A</span></div><div class="scroll">'+respA+'</div></div>'
