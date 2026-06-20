@@ -53,6 +53,7 @@ table.nug{width:100%;border-collapse:collapse;margin-top:6px;font-size:13px}.nug
 
 <script src="config.js"></script>
 <script src="content.js"></script>
+<script src="plan.js"></script>
 <script>
 var CFG=window.CONFIG, C=window.CONTENT;
 var QIDS=Object.keys(C);
@@ -69,6 +70,7 @@ document.getElementById('htitle').textContent="Fiche d'évaluation · "+(CFG.TIT
 
 var params=new URLSearchParams(location.search);
 var EV=params.get('ev'); if(EV){EV=EV.replace(/[^0-9]/g,''); if(EV.length===1)EV='0'+EV;}
+if(window.PLAN&&EV&&window.PLAN[EV]&&window.PLAN[EV].order){QIDS=window.PLAN[EV].order.filter(function(q){return C[q];});}
 var app=document.getElementById('app'), rem=document.getElementById('rem'), evtag=document.getElementById('evtag');
 var store={}, LSKEY="";
 
@@ -124,7 +126,7 @@ function menu(){
  setHeadFoot("menu"); window.scrollTo(0,0);
 }
 
-function ensureMap(qid){ if(!store['map_'+qid]){ var r=Math.random()<0.5; store['map_'+qid]= r?{A:'openai_noRAG',B:'mistralfast_RAG'}:{A:'mistralfast_RAG',B:'openai_noRAG'}; save(); } return store['map_'+qid]; }
+function ensureMap(qid){ if(window.PLAN&&EV&&window.PLAN[EV]&&window.PLAN[EV].ab&&window.PLAN[EV].ab[qid]){ return window.PLAN[EV].ab[qid]; } if(!store['map_'+qid]){ var r=Math.random()<0.5; store['map_'+qid]= r?{A:'openai_noRAG',B:'mistralfast_RAG'}:{A:'mistralfast_RAG',B:'openai_noRAG'}; save(); } return store['map_'+qid]; }
 
 function question(qid){
  var ct=C[qid], map=ensureMap(qid);
